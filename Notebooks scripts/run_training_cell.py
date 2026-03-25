@@ -40,7 +40,7 @@ def _run_cmd(command: str) -> None:
 
 root_dir = "/teamspace/studios/this_studio"
 trainer_dir = os.path.join(root_dir, "LoRA_Easy_Training_scripts_Backend")
-kohya_dir = os.path.join(trainer_dir, "sd-scripts")
+kohya_dir = os.path.join(root_dir, "sd-scripts")
 models_dir = "/teamspace/studios/this_studio/models"
 downloads_dir = os.path.join(root_dir, "downloads")
 custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
@@ -634,45 +634,45 @@ def create_config():
       f.write(toml.dumps(dataset_config_dict))
     print(f"📄 Configuración de dataset guardada en {dataset_config_file}")
 
+def download_anima_components() -> bool:
+  """Download Qwen3 text encoder and Qwen-Image VAE if not already present."""
+  os.makedirs(models_dir, exist_ok=True)
+
+  # Download Qwen3 text encoder
+  if not os.path.exists(qwen3_path):
+    print(f"🌐 Descargando Qwen3-0.6B text encoder en {qwen3_path} ...")
+    try:
+      _run_cmd(f"aria2c '{qwen3_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(qwen3_path)}'")
+    except Exception as exc:
+      print(f"💥 Error al descargar Qwen3 text encoder: {exc}")
+      return False
+    if not os.path.exists(qwen3_path):
+      print(f"💥 Error: Qwen3 text encoder no se encontró después de la descarga: {qwen3_path}")
+      return False
+  print(f"✅ Qwen3 text encoder listo: {qwen3_path}")
+
+  # Download Qwen-Image VAE
+  if not os.path.exists(anima_vae_path):
+    print(f"🌐 Descargando Qwen-Image VAE en {anima_vae_path} ...")
+    try:
+      _run_cmd(f"aria2c '{anima_vae_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(anima_vae_path)}'")
+    except Exception as exc:
+      print(f"💥 Error al descargar Qwen-Image VAE: {exc}")
+      return False
+    if not os.path.exists(anima_vae_path):
+      print(f"💥 Error: Qwen-Image VAE no se encontró después de la descarga: {anima_vae_path}")
+      return False
+  print(f"✅ Qwen-Image VAE listo: {anima_vae_path}")
+
+  if llm_adapter_path:
+    if os.path.exists(llm_adapter_path):
+      print(f"✅ LLM Adapter listo: {llm_adapter_path}")
+    else:
+      print(f"⚠️ LLM Adapter especificado pero no encontrado: {llm_adapter_path}")
+  return True
+
 def download_model():
   global old_model_url, model_url, model_file
-
-  def download_anima_components() -> bool:
-    """Download Qwen3 text encoder and Qwen-Image VAE if not already present."""
-    os.makedirs(models_dir, exist_ok=True)
-
-    # Download Qwen3 text encoder
-    if not os.path.exists(qwen3_path):
-      print(f"🌐 Descargando Qwen3-0.6B text encoder en {qwen3_path} ...")
-      try:
-        _run_cmd(f"aria2c '{qwen3_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(qwen3_path)}'")
-      except Exception as exc:
-        print(f"💥 Error al descargar Qwen3 text encoder: {exc}")
-        return False
-      if not os.path.exists(qwen3_path):
-        print(f"💥 Error: Qwen3 text encoder no se encontró después de la descarga: {qwen3_path}")
-        return False
-    print(f"✅ Qwen3 text encoder listo: {qwen3_path}")
-
-    # Download Qwen-Image VAE
-    if not os.path.exists(anima_vae_path):
-      print(f"🌐 Descargando Qwen-Image VAE en {anima_vae_path} ...")
-      try:
-        _run_cmd(f"aria2c '{anima_vae_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(anima_vae_path)}'")
-      except Exception as exc:
-        print(f"💥 Error al descargar Qwen-Image VAE: {exc}")
-        return False
-      if not os.path.exists(anima_vae_path):
-        print(f"💥 Error: Qwen-Image VAE no se encontró después de la descarga: {anima_vae_path}")
-        return False
-    print(f"✅ Qwen-Image VAE listo: {anima_vae_path}")
-
-    if llm_adapter_path:
-      if os.path.exists(llm_adapter_path):
-        print(f"✅ LLM Adapter listo: {llm_adapter_path}")
-      else:
-        print(f"⚠️ LLM Adapter especificado pero no encontrado: {llm_adapter_path}")
-    return True
 
   real_model_url = (model_url or "").strip()
   if not real_model_url:
@@ -694,8 +694,6 @@ def download_model():
   if local_candidate is not None:
     model_file = str(local_candidate)
     print(f"📁 Usando modelo local: {model_file}")
-    if not download_anima_components():
-      return False
   else:
     if real_model_url.lower().endswith((".ckpt", ".safetensors")):
       filename = os.path.basename(real_model_url)
@@ -711,9 +709,6 @@ def download_model():
 
     print(f"🌐 Descargando modelo DiT en {model_file} ...")
     _run_cmd(f"aria2c '{real_model_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(model_file)}'")
-
-    if not ensure_anima_components_ready():
-      return False
 
   if model_file.lower().endswith(".safetensors"):
     from safetensors.torch import load_file as load_safetensors
@@ -787,13 +782,18 @@ def main():
     print("✅ Dependencias ya instaladas.")
 
   if old_model_url != model_url or not model_file or not os.path.exists(model_file):
-    print("🔄 Obteniendo modelo...")
+    print("🔄 Obteniendo modelo DiT...")
     if not download_model():
       print("💥 Error: el modelo que especificó no es válido o está corrupto. Verifique que la URL sea accesible o que la ruta exista dentro de su espacio Lightning.")
       return
     print()
   else:
-    print("🔄 Modelo ya disponible.")
+    print("🔄 Modelo DiT ya disponible.")
+
+  print("🔄 Verificando componentes Anima (Qwen3 text encoder + Qwen-Image VAE)...")
+  if not download_anima_components():
+    print("💥 Error: no se pudieron descargar los componentes de Anima.")
+    return
 
   if lr_scheduler_type:
     create_config()
@@ -806,7 +806,7 @@ def main():
   print("⭐ Iniciando Entrenador Anima LoRA..")
 
   os.chdir(kohya_dir)
-  _run_cmd(f"{venv_python} {train_network} --config_file={config_file} --dataset_config={dataset_config_file}")
+  _run_cmd(f"{venv_python} {train_network} --console_log_simple --config_file={config_file} --dataset_config={dataset_config_file}")
   os.chdir(root_dir)
 
   if not get_ipython().__dict__.get('user_ns', {}).get('_exit_code', False):

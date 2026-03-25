@@ -73,7 +73,7 @@ COMMIT = "fa2427c6b468231e8e270e40fe72add780118dbe"
 LOWRAM = False
 LOAD_TRUNCATED_IMAGES = True
 BETTER_EPOCH_NAMES = True
-FIX_DIFFUSERS = True
+FIX_DIFFUSERS = False
 FIX_WANDB_WARNING = True
 
 #@title ## 🚩 Start Here (Anima LoRA Training)
@@ -345,7 +345,7 @@ def lightning_rel(path):
     return path
 
 
-venv_python = "/home/zeus/miniconda3/envs/cloudspace/bin/python3"
+venv_python = sys.executable
 train_network = os.path.join(kohya_dir, "anima_train_network.py")
 
 if "lora_projects" in folder_structure:

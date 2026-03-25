@@ -209,7 +209,7 @@ network_args = None
 timestep_sampling_param = "sigmoid" #@param ["sigma", "uniform", "sigmoid", "shift", "flux_shift"]
 timestep_sampling = globals().get("timestep_sampling", timestep_sampling_param)
 #@markdown Shift para la distribución de timesteps en Rectified Flow. Solo aplica cuando timestep_sampling='shift'.
-discrete_flow_shift_param = 1.0 #@param {type:"number"}
+discrete_flow_shift_param = 3.0 #@param {type:"number"}
 discrete_flow_shift = globals().get("discrete_flow_shift", discrete_flow_shift_param)
 #@markdown Factor de escala para sigmoid/shift/flux_shift timestep sampling.
 sigmoid_scale_param = 1.0 #@param {type:"number"}

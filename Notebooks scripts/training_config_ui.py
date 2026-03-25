@@ -217,7 +217,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     discrete_flow_shift_widget = widgets.FloatText(
-        value=float(namespace.get("discrete_flow_shift", 1.0)),
+        value=float(namespace.get("discrete_flow_shift", 3.0)),
         description="discrete_flow_shift",
         style=base_style,
         layout=number_layout,

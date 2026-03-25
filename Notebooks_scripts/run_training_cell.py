@@ -38,10 +38,10 @@ def _run_cmd(command: str) -> None:
         subprocess.run(command, shell=True, check=True)
 
 
-root_dir = "/teamspace/studios/this_studio"
+root_dir = "/root"
 trainer_dir = os.path.join(root_dir, "LoRA_Easy_Training_scripts_Backend")
 kohya_dir = os.path.join(root_dir, "sd-scripts")
-models_dir = "/teamspace/studios/this_studio/models"
+models_dir = "/root/models"
 downloads_dir = os.path.join(root_dir, "downloads")
 custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
 if custom_optimizer_path not in sys.path:
@@ -380,11 +380,6 @@ def install_trainer():
     os.chdir(trainer_dir)
     _run_cmd("git pull")
     os.chdir(root_dir)
-
-  os.chdir(trainer_dir)
-  display(HTML("<h2 style='color: yellow;'>Descargando dependencias</h2>"))
-  _run_cmd("chmod 755 /teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh")
-  _run_cmd("/teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh > install_log.txt 2>&1")
 
   os.chdir(kohya_dir)
   if LOAD_TRUNCATED_IMAGES:

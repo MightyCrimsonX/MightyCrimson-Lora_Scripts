@@ -701,14 +701,15 @@ def download_model():
       filename = "downloaded_model.safetensors"
 
     model_file = os.path.join(models_dir, filename)
+
     if os.path.exists(model_file):
-      _run_cmd(f"rm '{model_file}'")
+      print(f"✅ Modelo DiT ya descargado: {model_file}")
+    else:
+      if re.search(r"(?:https?://)?(?:www\.)?huggingface\.co/[^/]+/[^/]+/blob", real_model_url):
+        real_model_url = real_model_url.replace("blob", "resolve")
 
-    if re.search(r"(?:https?://)?(?:www\.)?huggingface\.co/[^/]+/[^/]+/blob", real_model_url):
-      real_model_url = real_model_url.replace("blob", "resolve")
-
-    print(f"🌐 Descargando modelo DiT en {model_file} ...")
-    _run_cmd(f"aria2c '{real_model_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(model_file)}'")
+      print(f"🌐 Descargando modelo DiT en {model_file} ...")
+      _run_cmd(f"aria2c '{real_model_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(model_file)}'")
 
   if model_file.lower().endswith(".safetensors"):
     from safetensors.torch import load_file as load_safetensors

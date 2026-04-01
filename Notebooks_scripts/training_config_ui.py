@@ -168,7 +168,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     text_encoder_lr_widget = widgets.Text(
-        value=_format_scientific(namespace.get("text_encoder_lr", 5e-5)),
+        value=_format_scientific(namespace.get("text_encoder_lr", 0)),
         description="text_encoder_lr (Qwen3)",
         style=base_style,
     )
@@ -179,19 +179,19 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     network_dim_widget = widgets.IntText(
-        value=int(namespace.get("network_dim", 8)),
+        value=int(namespace.get("network_dim", 16)),
         description="network_dim",
         style=base_style,
         layout=number_layout,
     )
     network_alpha_widget = widgets.IntText(
-        value=int(namespace.get("network_alpha", 4)),
+        value=int(namespace.get("network_alpha", 8)),
         description="network_alpha",
         style=base_style,
         layout=number_layout,
     )
     train_batch_size_widget = widgets.IntText(
-        value=int(namespace.get("train_batch_size", 4)),
+        value=int(namespace.get("train_batch_size", 2)),
         description="train_batch_size",
         style=base_style,
         layout=number_layout,
@@ -204,7 +204,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
     )
     optimizer_widget = widgets.Dropdown(
         options=optimizer_options,
-        value=namespace.get("optimizer", "Prodigy"),
+        value=namespace.get("optimizer", "AdamW8bit"),
         description="optimizer",
         style=base_style,
     )

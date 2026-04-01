@@ -301,7 +301,7 @@ if recommended_values:
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "CAME":
-    optimizer_args = ["weight_decay=0.04"]
+    optimizer_args = ["weight_decay=0.01 betas=[0.9,0.999,0.9999]"]
 
 if optimizer == "CAME":
   optimizer = "came_pytorch.CAME"
@@ -315,8 +315,8 @@ lr_scheduler_power = lr_scheduler_number
 seed = 42
 gradient_accumulation_steps = 1
 bucket_reso_steps = 64
-min_bucket_reso = 256
-max_bucket_reso = 4096
+min_bucket_reso = 768
+max_bucket_reso = 1536
 
 #@markdown ### ▶️ Ready
 #@markdown Ahora puedes ejecutar esta celda para entrenar tu LoRA de Anima. ¡Buena suerte!

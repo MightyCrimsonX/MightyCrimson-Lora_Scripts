@@ -323,7 +323,6 @@ if "rex" in lr_scheduler:
 
 if "cosine_with_restarts" in lr_scheduler:
   lr_warmup_steps = 8
-  lr_warmup_ratio = 0
 
 # Misc
 seed = 42

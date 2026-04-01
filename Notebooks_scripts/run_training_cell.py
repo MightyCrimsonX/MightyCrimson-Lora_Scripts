@@ -179,7 +179,7 @@ lr_scheduler_number = 0 #@param {type:"number"}
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}
 #@markdown `ip_noise_gamma` ajusta el ruido aleatorio. Nota: min_snr_gamma NO es compatible con Anima (usa Rectified Flow).
-ip_noise_gamma_enabled = True #@param {type:"boolean"}
+ip_noise_gamma_enabled = False #@param {type:"boolean"}
 ip_noise_gamma = 0.05 #@param {type:"slider", min:0.05, max:0.1, step:0.01}
 
 #@markdown ### ▶️ Text Encoder LoRA
@@ -209,7 +209,7 @@ network_args = None
 timestep_sampling_param = "sigmoid" #@param ["sigma", "uniform", "sigmoid", "shift", "flux_shift"]
 timestep_sampling = globals().get("timestep_sampling", timestep_sampling_param)
 #@markdown Shift para la distribución de timesteps en Rectified Flow. Solo aplica cuando timestep_sampling='shift'.
-discrete_flow_shift_param = 3.0 #@param {type:"number"}
+discrete_flow_shift_param = 3 #@param {type:"number"}
 discrete_flow_shift = globals().get("discrete_flow_shift", discrete_flow_shift_param)
 #@markdown Factor de escala para sigmoid/shift/flux_shift timestep sampling.
 sigmoid_scale_param = 1.0 #@param {type:"number"}
@@ -257,7 +257,7 @@ network_reg_lrs = str(globals().get("network_reg_lrs", network_reg_lrs_param)).s
 
 #@markdown ### ▶️ Training
 #@markdown Ajuste estos parámetros según la configuración de su entorno.
-train_batch_size_param = 4 #@param {type:"slider", min:1, max:16, step:1}
+train_batch_size_param = 2 #@param {type:"slider", min:1, max:16, step:1}
 train_batch_size = globals().get("train_batch_size", train_batch_size_param)
 #@markdown Implementación de atención a usar. `torch` es el valor por defecto.
 attn_mode_param = "torch" #@param ["torch", "xformers", "flash", "sageattn"]
@@ -321,12 +321,16 @@ if "rex" in lr_scheduler:
   lr_scheduler_type = "LoraEasyCustomOptimizer.RexAnnealingWarmRestarts.RexAnnealingWarmRestarts"
   lr_scheduler_args = ["min_lr=1e-9", "gamma=0.9", "d=0.9"]
 
+if "cosine_with_restarts" in lr_scheduler:
+  lr_warmup_steps = 8
+  lr_warmup_ratio = 0
+
 # Misc
 seed = 42
 gradient_accumulation_steps = 1
 bucket_reso_steps = 64
-min_bucket_reso = 256
-max_bucket_reso = 4096
+min_bucket_reso = 768
+max_bucket_reso = 1536
 
 #@markdown ### ▶️ Ready
 #@markdown Ahora puedes ejecutar esta celda para entrenar tu LoRA de Anima. ¡Buena suerte!
@@ -568,6 +572,9 @@ def create_config():
         "vae_chunk_size": vae_chunk_size if vae_chunk_size > 0 else None,
         "vae_disable_cache": vae_disable_cache or None,
         "unsloth_offload_checkpointing": unsloth_offload_checkpointing or None,
+        "min_snr_gamma": 5.0,
+        "multires_noise_discount": 0.3,
+        "multires_noise_iterations": 6,
       },
       "saving_arguments": {
         "save_precision": "fp16",

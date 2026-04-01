@@ -94,6 +94,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "sigmoid",
         "shift",
         "flux_shift",
+        "logit_normal",
     ]
 
     attn_mode_options = [
@@ -108,6 +109,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "sigma_sqrt",
         "cosmap",
         "none",
+        "logit_normal",
     ]
 
     loss_type_options = [

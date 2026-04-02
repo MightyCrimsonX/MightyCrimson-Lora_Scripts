@@ -301,7 +301,7 @@ if recommended_values:
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "CAME":
-    optimizer_args = ["weight_decay=0.01 betas=[0.9,0.999,0.9999]"]
+    optimizer_args = ["weight_decay=0.01", "betas=[0.9,0.999,0.9999]"]
 
 if optimizer == "CAME":
   optimizer = "came_pytorch.CAME"

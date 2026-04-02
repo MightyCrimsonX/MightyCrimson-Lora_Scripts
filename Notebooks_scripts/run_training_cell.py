@@ -546,7 +546,7 @@ def create_config():
         "ip_noise_gamma": ip_noise_gamma if ip_noise_gamma_enabled else None,
         "gradient_checkpointing": True,
         "gradient_accumulation_steps": gradient_accumulation_steps,
-        "max_data_loader_n_workers": 1,
+        "max_data_loader_n_workers": 4,
         "persistent_data_loader_workers": True,
         "mixed_precision": mixed_precision,
         "full_fp16": mixed_precision == "fp16" and full_precision,
@@ -558,9 +558,6 @@ def create_config():
         "vae_chunk_size": vae_chunk_size if vae_chunk_size > 0 else None,
         "vae_disable_cache": vae_disable_cache or None,
         "unsloth_offload_checkpointing": unsloth_offload_checkpointing or None,
-        "min_snr_gamma": 5.0,
-        "multires_noise_discount": 0.3,
-        "multires_noise_iterations": 6,
       },
       "saving_arguments": {
         "save_precision": "fp16",

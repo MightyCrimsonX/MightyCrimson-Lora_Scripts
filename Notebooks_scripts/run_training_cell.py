@@ -39,14 +39,9 @@ def _run_cmd(command: str) -> None:
 
 
 root_dir = "/root"
-trainer_dir = os.path.join(root_dir, "LoRA_Easy_Training_scripts_Backend")
 kohya_dir = os.path.join(root_dir, "sd-scripts")
 models_dir = "/root/models"
 downloads_dir = os.path.join(root_dir, "downloads")
-custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
-if custom_optimizer_path not in sys.path:
-  sys.path.append(custom_optimizer_path)
-os.environ["PYTHONPATH"] = custom_optimizer_path + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # Lightning notebooks run continuously; automatic shutdown is not managed here.
 print("🔵 Lightning environment detectado. Detén el cuaderno manualmente cuando termines.")
@@ -172,7 +167,7 @@ unet_lr = globals().get("unet_lr", unet_lr_param)
 text_encoder_lr_param = 5e-5 #@param {type:"number"}
 text_encoder_lr = globals().get("text_encoder_lr", text_encoder_lr_param)
 #@markdown El scheduler es el algoritmo que guía la tasa de aprendizaje.
-lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial","rex"]
+lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial"]
 lr_scheduler = globals().get("lr_scheduler", lr_scheduler_param)
 lr_scheduler_number = 0 #@param {type:"number"}
 #@markdown Pasos de warmup como proporción del total.
@@ -280,7 +275,7 @@ full_precision = "full" in precision
 
 #@markdown ### ▶️ Advanced
 #@markdown El optimizador utilizado para el entrenamiento.
-optimizer_param = "Prodigy" #@param ["AdamW8bit", "Prodigy", "DAdaptation", "DadaptAdam", "DadaptLion", "AdamW", "Lion", "SGDNesterov", "SGDNesterov8bit", "AdaFactor", "Came"]
+optimizer_param = "Prodigy" #@param ["AdamW8bit", "Prodigy", "DAdaptation", "DadaptAdam", "DadaptLion", "AdamW", "Lion", "SGDNesterov", "SGDNesterov8bit", "AdaFactor", "CAME"]
 optimizer = globals().get("optimizer", optimizer_param)
 #@markdown Argumentos recomendados para Prodigy: `decouple=True weight_decay=0.01 betas=[0.9,0.999] d_coef=2 use_bias_correction=True safeguard_warmup=True`
 #@markdown Si se selecciona Dadapt o Prodigy y se marca la casilla recomendada, se aplicarán valores optimizados.
@@ -305,21 +300,16 @@ if recommended_values:
     optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
-  elif optimizer == "Came":
-    optimizer_args = ["weight_decay=0.04"]
+  elif optimizer == "CAME":
+    optimizer_args = ["weight_decay=0.01", "betas=[0.9,0.999,0.9999]"]
 
-if optimizer == "Came":
-  optimizer = "LoraEasyCustomOptimizer.came.CAME"
+if optimizer == "CAME":
+  optimizer = "came_pytorch.CAME"
 
 lr_scheduler_type = None
 lr_scheduler_args = None
 lr_scheduler_num_cycles = lr_scheduler_number
 lr_scheduler_power = lr_scheduler_number
-
-if "rex" in lr_scheduler:
-  lr_scheduler = "cosine"
-  lr_scheduler_type = "LoraEasyCustomOptimizer.RexAnnealingWarmRestarts.RexAnnealingWarmRestarts"
-  lr_scheduler_args = ["min_lr=1e-9", "gamma=0.9", "d=0.9"]
 
 if "cosine_with_restarts" in lr_scheduler:
   lr_warmup_steps = 8
@@ -377,12 +367,9 @@ def install_trainer():
   if not os.path.exists(libtcmalloc_path):
     _run_cmd(f"wget -q -c --show-progress https://github.com/camenduru/gperftools/releases/download/v1.0/libtcmalloc_minimal.so.4 -O {libtcmalloc_path}")
 
-  if not os.path.exists(trainer_dir):
-    _run_cmd(f"git clone -b dev https://github.com/gwhitez/LoRA_Easy_Training_scripts_Backend.git {trainer_dir}")
-  else:
-    os.chdir(trainer_dir)
-    _run_cmd("git pull")
-    os.chdir(root_dir)
+  display(HTML("<h2 style='color: yellow;'>Descargando dependencias</h2>"))
+  # Install came-pytorch for the CAME optimizer
+  _run_cmd(f"{venv_python} -m pip install -q came-pytorch")
 
   os.chdir(kohya_dir)
   if LOAD_TRUNCATED_IMAGES:
@@ -724,7 +711,6 @@ def download_model():
 
 
 def calculate_rex_steps():
-  # https://github.com/derrian-distro/LoRA_Easy_Training_scripts_Backend/blob/c34084b0435e6e19bb7a01ac1ecbadd185ee8c1e/utils/validation.py#L268
   global max_train_steps
   print("\n🤔 Calculating Rex steps")
   if max_train_steps:
@@ -766,7 +752,7 @@ def calculate_rex_steps():
 def main():
   global dependencies_installed
 
-  for dir in (main_dir, trainer_dir, log_folder, images_folder, output_folder, config_folder, models_dir, downloads_dir):
+  for dir in (main_dir, log_folder, images_folder, output_folder, config_folder, models_dir, downloads_dir):
     os.makedirs(dir, exist_ok=True)
 
   if not validate_dataset():

@@ -116,12 +116,12 @@ custom_model_selected = use_optional_custom_training_model and len(optional_cust
 if custom_model_selected:
   model_url = optional_custom_training_model
 elif "Anima-Preview" in training_model:
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview2.safetensors"
-  model_file = os.path.join(models_dir, "anima_preview_dit.safetensors")
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
+  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
 else:
   # Default fallback to Anima-Preview
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview2.safetensors"
-  model_file = os.path.join(models_dir, "anima_preview_dit.safetensors")
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
+  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
 
 # The VAE path is passed directly as --vae argument
 vae_file = anima_vae_path

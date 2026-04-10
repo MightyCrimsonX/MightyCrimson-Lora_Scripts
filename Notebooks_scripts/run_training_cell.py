@@ -174,7 +174,7 @@ lr_scheduler_number = 0 #@param {type:"number"}
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}
 #@markdown `ip_noise_gamma` ajusta el ruido aleatorio. Nota: min_snr_gamma NO es compatible con Anima (usa Rectified Flow).
-ip_noise_gamma_enabled = False #@param {type:"boolean"}
+ip_noise_gamma_enabled = True #@param {type:"boolean"}
 ip_noise_gamma = 0.05 #@param {type:"slider", min:0.05, max:0.1, step:0.01}
 
 #@markdown ### ▶️ Text Encoder LoRA

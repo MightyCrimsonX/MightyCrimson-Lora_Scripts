@@ -164,7 +164,7 @@ if not keep_only_last_n_epochs:
 unet_lr_param = 1e-4 #@param {type:"number"}
 unet_lr = globals().get("unet_lr", unet_lr_param)
 #@markdown Learning rate del text encoder Qwen3. Se recomienda la mitad del unet_lr o menos. Ponlo en 0 para no entrenar el text encoder.
-text_encoder_lr_param = 5e-5 #@param {type:"number"}
+text_encoder_lr_param = 0 #@param {type:"number"}
 text_encoder_lr = globals().get("text_encoder_lr", text_encoder_lr_param)
 #@markdown El scheduler es el algoritmo que guía la tasa de aprendizaje.
 lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial"]
@@ -174,7 +174,7 @@ lr_scheduler_number = 0 #@param {type:"number"}
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}
 #@markdown `ip_noise_gamma` ajusta el ruido aleatorio. Nota: min_snr_gamma NO es compatible con Anima (usa Rectified Flow).
-ip_noise_gamma_enabled = True #@param {type:"boolean"}
+ip_noise_gamma_enabled = False #@param {type:"boolean"}
 ip_noise_gamma = 0.05 #@param {type:"slider", min:0.05, max:0.1, step:0.01}
 
 #@markdown ### ▶️ Text Encoder LoRA
@@ -183,12 +183,6 @@ network_train_unet_only_param = True #@param {type:"boolean"}
 network_train_unet_only = bool(globals().get("network_train_unet_only", network_train_unet_only_param))
 
 #@markdown ### ▶️ Structure (Anima LoRA)
-#@markdown Anima usa `networks.lora_anima` como módulo de red. LoCon no está disponible para Anima.
-#@markdown A continuación se muestran valores recomendados:
-#@markdown | Tipo | network_dim | network_alpha |
-#@markdown | :---: | :---: | :---: |
-#@markdown | Personaje LoRA | 8 | 4 |
-#@markdown | Estilo LoRA | 16 | 8 |
 
 network_dim_param = 8 #@param {type:"number", min:1, max:128, step:1}
 network_dim = globals().get("network_dim", network_dim_param)
@@ -297,28 +291,26 @@ if recommended_values:
   if optimizer == "Prodigy":
     optimizer_args = ["decouple=True", "weight_decay=0.01", "betas=[0.9,0.999]", "d_coef=1", "use_bias_correction=True", "safeguard_warmup=True"]
   elif optimizer == "AdamW8bit":
-    optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
+    optimizer_args = ["weight_decay=0.1"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "CAME":
-    optimizer_args = ["weight_decay=0.01", "betas=[0.9,0.999,0.9999]"]
+    optimizer_args = ["weight_decay=0.1"]
 
 if optimizer == "CAME":
-  optimizer = "came_pytorch.CAME"
+  optimizer = "LoraEasyCustomOptimizer.came.CAME"
 
 lr_scheduler_type = None
-lr_scheduler_args = None
+lr_scheduler_args = []
 lr_scheduler_num_cycles = lr_scheduler_number
 lr_scheduler_power = lr_scheduler_number
 
-if "cosine_with_restarts" in lr_scheduler:
-  lr_warmup_steps = 8
 
 # Misc
 seed = 42
 gradient_accumulation_steps = 1
 bucket_reso_steps = 64
-min_bucket_reso = 768
+min_bucket_reso = 256
 max_bucket_reso = 1536
 
 #@markdown ### ▶️ Ready

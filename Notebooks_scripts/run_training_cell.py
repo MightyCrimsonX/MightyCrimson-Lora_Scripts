@@ -285,11 +285,11 @@ loss_type = globals().get("loss_type", loss_type_param)
 if recommended_values:
   if any(opt in optimizer.lower() for opt in ["dadapt", "prodigy"]):
     unet_lr = 1.0
-    text_encoder_lr = 1.0
+    #text_encoder_lr = 1.0
     full_precision = False
     network_alpha = network_dim
   if optimizer == "Prodigy":
-    optimizer_args = ["decouple=True", "weight_decay=0.01", "betas=[0.9,0.999]", "d_coef=1", "use_bias_correction=True", "safeguard_warmup=True"]
+    optimizer_args = ["d_coef=2", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
     optimizer_args = ["weight_decay=0.1"]
   elif optimizer == "AdaFactor":

@@ -169,7 +169,7 @@ text_encoder_lr = globals().get("text_encoder_lr", text_encoder_lr_param)
 #@markdown El scheduler es el algoritmo que guía la tasa de aprendizaje.
 lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial"]
 lr_scheduler = globals().get("lr_scheduler", lr_scheduler_param)
-lr_scheduler_number = 0 #@param {type:"number"}
+lr_scheduler_number = 3 #@param {type:"number"}
 #@markdown Pasos de warmup como proporción del total.
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}

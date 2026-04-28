@@ -38,9 +38,9 @@ def _run_cmd(command: str) -> None:
 
 
 root_dir = "/teamspace/studios/this_studio"
-trainer_dir = os.path.join(root_dir, "LoRA_Easy_Training_scripts_Backend")
-kohya_dir = os.path.join(trainer_dir, "sd-scripts")
-models_dir = "/teamspace/studios/this_studio/models"
+trainer_dir = os.path.join(root_dir, "LoRA_Easy_Tr  aining_scripts_Backend")
+kohya_dir = os.path.join(root_dir, "sd-scripts")
+models_dir = os.path.join(root_dir, "models")
 downloads_dir = os.path.join(root_dir, "downloads")
 custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
 if custom_optimizer_path not in sys.path:
@@ -137,7 +137,7 @@ elif "Illustrious_2.0" in training_model:
   if load_diffusers:
     model_url = "https://huggingface.co/WhiteAiZ/Illustrious_2.0"
   else:
-    model_url = "https://huggingface.co/WhiteAiZ/Illustrious_2.0/resolve/main/illustriousXL20_v20.safetensors"
+    model_url = "https://huggingface.co/OnomaAIResearch/Illustrious-XL-v2.0/resolve/main/Illustrious-XL-v2.0.safetensors"
   model_file = os.path.join(models_dir, "illustriousXL20_v20.safetensors")
 elif "NoobAI-XL0.75" in training_model:
   if load_diffusers:
@@ -172,7 +172,7 @@ else:
 if load_diffusers:
   vae_file= "stabilityai/sdxl-vae"
 else:
-  vae_url = "https://huggingface.co/stabilityai/sdxl-vae/resolve/main/sdxl_vae.safetensors"
+  vae_url = "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/main/sdxl.vae.safetensors"
   vae_file = os.path.join(models_dir, "sdxl_vae.safetensors")
 
 model_url = model_url.strip()
@@ -318,7 +318,7 @@ if recommended_values:
     full_precision = False
     network_alpha = network_dim
   if optimizer == "Prodigy":
-    optimizer_args = ["decouple=True", "weight_decay=0.01", "betas=[0.9,0.999]", "d_coef=1", "use_bias_correction=True", "safeguard_warmup=True"]
+    optimizer_args = ["d_coef=1", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
     optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
   elif optimizer == "AdaFactor":
@@ -394,16 +394,11 @@ def install_trainer():
     _run_cmd(f"wget -q -c --show-progress https://github.com/camenduru/gperftools/releases/download/v1.0/libtcmalloc_minimal.so.4 -O {libtcmalloc_path}")
 
   if not os.path.exists(trainer_dir):
-    _run_cmd(f"git clone -b dev https://github.com/gwhitez/LoRA_Easy_Training_scripts_Backend.git {trainer_dir}")
+    _run_cmd(f"git clone https://github.com/67372a/LoRA_Easy_Training_scripts_Backend.git {trainer_dir}")
   else:
     os.chdir(trainer_dir)
     _run_cmd("git pull")
     os.chdir(root_dir)
-
-  os.chdir(trainer_dir)
-  display(HTML("<h2 style='color: yellow;'>Descargando dependencias</h2>"))
-  _run_cmd("chmod 755 /teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh")
-  _run_cmd("/teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh > install_log.txt 2>&1")
 
   os.chdir(kohya_dir)
   if LOAD_TRUNCATED_IMAGES:
@@ -559,7 +554,7 @@ def create_config():
         "sdpa": cross_attention == "sdpa",
         "min_snr_gamma": min_snr_gamma if min_snr_gamma_enabled else None,
         "ip_noise_gamma": ip_noise_gamma if ip_noise_gamma_enabled else None,
-        "no_half_vae": True,
+        "no_half_vae": False,
         "gradient_checkpointing": True,
         "gradient_accumulation_steps": gradient_accumulation_steps,
         "max_data_loader_n_workers": 1,
@@ -578,6 +573,7 @@ def create_config():
         "v_parameterization": vpred or None,
         "scale_v_pred_loss_like_noise_pred": vpred or None,
         "zero_terminal_snr": vpred or None,
+        "split_attn": True if cross_attention == "xformers" else None,
       },
       "saving_arguments": {
         "save_precision": "fp16",
@@ -835,7 +831,7 @@ def main():
   print("⭐ Iniciando Entrenador..")
 
   os.chdir(kohya_dir)
-  _run_cmd(f"{venv_python} {train_network} --config_file={config_file} --dataset_config={dataset_config_file}")
+  _run_cmd(f"{venv_python} {train_network} --console_log_simple --config_file={config_file} --dataset_config={dataset_config_file}")
   os.chdir(root_dir)
 
   if not get_ipython().__dict__.get('user_ns', {}).get('_exit_code', False):

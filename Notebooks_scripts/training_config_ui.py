@@ -147,13 +147,13 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
     )
 
     resolution_widget = widgets.IntText(
-        value=int(namespace.get("resolution", 1024)),
+        value=int(namespace.get("resolution", 768)),
         description="resolution",
         style=base_style,
         layout=number_layout,
     )
     num_repeats_widget = widgets.IntText(
-        value=int(namespace.get("num_repeats", 2)),
+        value=int(namespace.get("num_repeats", 4)),
         description="num_repeats",
         style=base_style,
         layout=number_layout,
@@ -170,7 +170,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     text_encoder_lr_widget = widgets.Text(
-        value=_format_scientific(namespace.get("text_encoder_lr", 5e-5)),
+        value=_format_scientific(namespace.get("text_encoder_lr", 0)),
         description="text_encoder_lr (Qwen3)",
         style=base_style,
     )
@@ -193,14 +193,14 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         layout=number_layout,
     )
     train_batch_size_widget = widgets.IntText(
-        value=int(namespace.get("train_batch_size", 4)),
+        value=int(namespace.get("train_batch_size", 1)),
         description="train_batch_size",
         style=base_style,
         layout=number_layout,
     )
     precision_widget = widgets.Dropdown(
         options=precision_options,
-        value=_resolve_precision(namespace.get("precision", "bf16"), precision_options),
+        value=_resolve_precision(namespace.get("precision", "fp16"), precision_options),
         description="precision",
         style=base_style,
     )
@@ -257,7 +257,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         layout=number_layout,
     )
     vae_chunk_size_widget = widgets.IntText(
-        value=int(namespace.get("vae_chunk_size", 64)),
+        value=int(namespace.get("vae_chunk_size", 0)),
         description="vae_chunk_size",
         style=base_style,
         layout=number_layout,

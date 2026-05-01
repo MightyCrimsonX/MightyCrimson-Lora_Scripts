@@ -121,12 +121,12 @@ custom_model_selected = use_optional_custom_training_model and len(optional_cust
 if custom_model_selected:
   model_url = optional_custom_training_model
 elif "Anima-Preview" in training_model:
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview2.safetensors"
-  model_file = os.path.join(models_dir, "anima_preview_dit.safetensors")
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
+  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
 else:
   # Default fallback to Anima-Preview
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview2.safetensors"
-  model_file = os.path.join(models_dir, "anima_preview_dit.safetensors")
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
+  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
 
 # The VAE path is passed directly as --vae argument
 vae_file = anima_vae_path
@@ -179,7 +179,7 @@ lr_scheduler_number = 0 #@param {type:"number"}
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}
 #@markdown `ip_noise_gamma` ajusta el ruido aleatorio. Nota: min_snr_gamma NO es compatible con Anima (usa Rectified Flow).
-ip_noise_gamma_enabled = True #@param {type:"boolean"}
+ip_noise_gamma_enabled = False #@param {type:"boolean"}
 ip_noise_gamma = 0.05 #@param {type:"slider", min:0.05, max:0.1, step:0.01}
 
 #@markdown ### ▶️ Text Encoder LoRA
@@ -257,7 +257,7 @@ network_reg_lrs = str(globals().get("network_reg_lrs", network_reg_lrs_param)).s
 
 #@markdown ### ▶️ Training
 #@markdown Ajuste estos parámetros según la configuración de su entorno.
-train_batch_size_param = 4 #@param {type:"slider", min:1, max:16, step:1}
+train_batch_size_param = 1 #@param {type:"slider", min:1, max:16, step:1}
 train_batch_size = globals().get("train_batch_size", train_batch_size_param)
 #@markdown Implementación de atención a usar. `torch` es el valor por defecto.
 attn_mode_param = "torch" #@param ["torch", "xformers", "flash", "sageattn"]
@@ -300,13 +300,13 @@ if recommended_values:
     full_precision = False
     network_alpha = network_dim
   if optimizer == "Prodigy":
-    optimizer_args = ["decouple=True", "weight_decay=0.01", "betas=[0.9,0.999]", "d_coef=1", "use_bias_correction=True", "safeguard_warmup=True"]
+    optimizer_args = ["d_coef=1", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
     optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "Came":
-    optimizer_args = ["weight_decay=0.04"]
+    optimizer_args = ["weight_decay=0.1"]
 
 if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"
@@ -326,7 +326,7 @@ seed = 42
 gradient_accumulation_steps = 1
 bucket_reso_steps = 64
 min_bucket_reso = 256
-max_bucket_reso = 4096
+max_bucket_reso = 1560
 
 #@markdown ### ▶️ Ready
 #@markdown Ahora puedes ejecutar esta celda para entrenar tu LoRA de Anima. ¡Buena suerte!
@@ -789,7 +789,7 @@ def main():
       return
     print()
   else:
-    print("🔄 Modelo DiT ya disponible.")
+    print("🔄 Modelo Anima ya disponible.")
 
   print("🔄 Verificando componentes Anima (Qwen3 text encoder + Qwen-Image VAE)...")
   if not download_anima_components():

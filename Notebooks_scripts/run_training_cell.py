@@ -169,7 +169,7 @@ if not keep_only_last_n_epochs:
 unet_lr_param = 1e-4 #@param {type:"number"}
 unet_lr = globals().get("unet_lr", unet_lr_param)
 #@markdown Learning rate del text encoder Qwen3. Se recomienda la mitad del unet_lr o menos. Ponlo en 0 para no entrenar el text encoder.
-text_encoder_lr_param = 5e-5 #@param {type:"number"}
+text_encoder_lr_param = 0 #@param {type:"number"}
 text_encoder_lr = globals().get("text_encoder_lr", text_encoder_lr_param)
 #@markdown El scheduler es el algoritmo que guía la tasa de aprendizaje.
 lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial","rex"]
@@ -282,8 +282,6 @@ full_precision = "full" in precision
 #@markdown El optimizador utilizado para el entrenamiento.
 optimizer_param = "Prodigy" #@param ["AdamW8bit", "Prodigy", "DAdaptation", "DadaptAdam", "DadaptLion", "AdamW", "Lion", "SGDNesterov", "SGDNesterov8bit", "AdaFactor", "Came"]
 optimizer = globals().get("optimizer", optimizer_param)
-#@markdown Argumentos recomendados para Prodigy: `decouple=True weight_decay=0.01 betas=[0.9,0.999] d_coef=2 use_bias_correction=True safeguard_warmup=True`
-#@markdown Si se selecciona Dadapt o Prodigy y se marca la casilla recomendada, se aplicarán valores optimizados.
 recommended_values = True #@param {type:"boolean"}
 #@markdown Alternativamente, establezca sus propios argumentos de optimizador separados por espacios.
 optimizer_args = "" #@param {type:"string"}
@@ -410,17 +408,17 @@ def install_trainer():
   if not os.path.exists(libtcmalloc_path):
     _run_cmd(f"wget -q -c --show-progress https://github.com/camenduru/gperftools/releases/download/v1.0/libtcmalloc_minimal.so.4 -O {libtcmalloc_path}")
 
-  if not os.path.exists(trainer_dir):
-    _run_cmd(f"git clone -b dev https://github.com/gwhitez/LoRA_Easy_Training_scripts_Backend.git {trainer_dir}")
-  else:
-    os.chdir(trainer_dir)
-    _run_cmd("git pull")
-    os.chdir(root_dir)
+  #if not os.path.exists(trainer_dir):
+  #  _run_cmd(f"git clone -b dev https://github.com/gwhitez/LoRA_Easy_Training_scripts_Backend.git {trainer_dir}")
+  #else:
+   # os.chdir(trainer_dir)
+   # _run_cmd("git pull")
+   # os.chdir(root_dir)
 
-  os.chdir(trainer_dir)
-  display(HTML("<h2 style='color: yellow;'>Descargando dependencias</h2>"))
-  _run_cmd("chmod 755 /teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh")
-  _run_cmd("/teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh > install_log.txt 2>&1")
+  #os.chdir(trainer_dir)
+  #display(HTML("<h2 style='color: yellow;'>Descargando dependencias</h2>"))
+  #_run_cmd("chmod 755 /teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh")
+  #_run_cmd("/teamspace/studios/this_studio/LoRA_Easy_Training_scripts_Backend/colab_install.sh > install_log.txt 2>&1")
 
   os.chdir(kohya_dir)
   if LOAD_TRUNCATED_IMAGES:
@@ -606,7 +604,7 @@ def create_config():
         "ip_noise_gamma": ip_noise_gamma if ip_noise_gamma_enabled else None,
         "gradient_checkpointing": True,
         "gradient_accumulation_steps": gradient_accumulation_steps,
-        "max_data_loader_n_workers": 1,
+        "max_data_loader_n_workers": 4,
         "persistent_data_loader_workers": True,
         "mixed_precision": mixed_precision,
         "full_fp16": mixed_precision == "fp16" and full_precision,

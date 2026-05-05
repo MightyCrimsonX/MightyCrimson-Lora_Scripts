@@ -293,6 +293,38 @@ optimizer_args = [a.strip() for a in optimizer_args.split(' ') if a]
 loss_type_param = "l2" #@param ["l1", "l2", "huber", "smooth_l1"]
 loss_type = globals().get("loss_type", loss_type_param)
 
+#@markdown ### ▶️ Sample Image Generator 🖼️
+#@markdown Genera imágenes de muestra durante el entrenamiento para monitorear el progreso visual del LoRA.
+enable_sample_generation_param = False #@param {type:"boolean"}
+enable_sample_generation = bool(globals().get("enable_sample_generation", enable_sample_generation_param))
+#@markdown Genera muestras cada N épocas.
+sample_every_n_epochs_param = 1 #@param {type:"number"}
+sample_every_n_epochs = int(globals().get("sample_every_n_epochs", sample_every_n_epochs_param))
+#@markdown Genera una muestra antes de iniciar el entrenamiento.
+sample_at_first_param = True #@param {type:"boolean"}
+sample_at_first = bool(globals().get("sample_at_first", sample_at_first_param))
+#@markdown **Prompt positivo** para las imágenes de muestra.
+sample_positive_prompt_param = "masterpiece, best quality, 1girl, upper body, looking at viewer, simple background" #@param {type:"string"}
+sample_positive_prompt = str(globals().get("sample_positive_prompt", sample_positive_prompt_param))
+#@markdown **Prompt negativo** para las imágenes de muestra.
+sample_negative_prompt_param = "low quality, worst quality, bad anatomy, bad composition, poor, low effort" #@param {type:"string"}
+sample_negative_prompt = str(globals().get("sample_negative_prompt", sample_negative_prompt_param))
+#@markdown Resolución de las imágenes de muestra.
+sample_resolution_param = "832x1216" #@param ["832x1216", "1216x832", "768x1344", "1344x768", "768x1024", "1024x768", "1024x1024", "896x1152", "1152x896"]
+sample_resolution = str(globals().get("sample_resolution", sample_resolution_param))
+#@markdown Semilla para la generación (se usará la misma en todas las muestras).
+sample_seed_param = 42 #@param {type:"number"}
+sample_seed = int(globals().get("sample_seed", sample_seed_param))
+#@markdown CFG Scale para la generación de muestras.
+sample_cfg_scale_param = 7.0 #@param {type:"number"}
+sample_cfg_scale = float(globals().get("sample_cfg_scale", sample_cfg_scale_param))
+#@markdown Número de pasos de generación para las muestras.
+sample_steps_param = 28 #@param {type:"number"}
+sample_steps = int(globals().get("sample_steps", sample_steps_param))
+#@markdown Sampler/Scheduler para la generación de muestras.
+sample_sampler_param = "euler_a" #@param ["euler_a", "euler", "dpm++_2m_karras", "dpm++_2m", "dpm++_sde_karras", "ddim"]
+sample_sampler = str(globals().get("sample_sampler", sample_sampler_param))
+
 if recommended_values:
   if any(opt in optimizer.lower() for opt in ["dadapt", "prodigy"]):
     unet_lr = 1.0
@@ -363,6 +395,10 @@ else:
 
 config_file = os.path.join(config_folder, "training_config.toml")
 dataset_config_file = os.path.join(config_folder, "dataset_config.toml")
+
+# --- Sample Image Generation Paths ---
+samples_folder = os.path.join(main_dir, project_name, "samples_img")
+sample_prompt_file = os.path.join(config_folder, "sample_prompts.txt")
 
 def install_trainer():
   global installed
@@ -516,6 +552,15 @@ def create_config():
     config_file = override_config_file
     print(f"\n⭕ Using custom config file {config_file}")
   else:
+    # --- Create sample prompt file if enabled ---
+    if enable_sample_generation:
+      os.makedirs(samples_folder, exist_ok=True)
+      sample_w, sample_h = sample_resolution.split("x")
+      with open(sample_prompt_file, "w") as spf:
+        prompt_line = f"{sample_positive_prompt} --n {sample_negative_prompt} --w {sample_w} --h {sample_h} --d {int(sample_seed)} --l {sample_cfg_scale} --s {int(sample_steps)}"
+        spf.write(prompt_line + "\n")
+      print(f"📝 Prompt de sample guardado en {sample_prompt_file}")
+
     config_dict = {
       "network_arguments": {
         "unet_lr": unet_lr,
@@ -585,6 +630,12 @@ def create_config():
         "logging_dir": log_folder,
         "wandb_api_key": wandb_key or None,
         "log_with": "wandb" if wandb_key else None,
+      },
+      "sample_arguments": {
+        "sample_every_n_epochs": sample_every_n_epochs if enable_sample_generation else None,
+        "sample_at_first": sample_at_first if enable_sample_generation else None,
+        "sample_prompts": sample_prompt_file if enable_sample_generation else None,
+        "sample_sampler": sample_sampler if enable_sample_generation else None,
       }
     }
 

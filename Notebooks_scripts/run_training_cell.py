@@ -336,7 +336,7 @@ if recommended_values:
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "Came":
-    optimizer_args = ["weight_decay=0.1"]
+    optimizer_args = ["weight_decay=0.04"]
 
 if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"

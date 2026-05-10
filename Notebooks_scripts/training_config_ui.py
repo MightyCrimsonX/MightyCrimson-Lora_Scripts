@@ -85,7 +85,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "DadaptLion",
         "AdamW",
         "AdaFactor",
-        "CAME",
+        "Came",
     ]
 
     timestep_sampling_options = [
@@ -94,6 +94,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "sigmoid",
         "shift",
         "flux_shift",
+        "logit_normal",
     ]
 
     attn_mode_options = [
@@ -108,6 +109,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "sigma_sqrt",
         "cosmap",
         "none",
+        "logit_normal",
     ]
 
     loss_type_options = [
@@ -115,6 +117,28 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "l2",
         "huber",
         "smooth_l1",
+    ]
+
+
+    sample_resolution_options = [
+        "832x1216",
+        "1216x832",
+        "768x1344",
+        "1344x768",
+        "768x1024",
+        "1024x768",
+        "1024x1024",
+        "896x1152",
+        "1152x896",
+    ]
+
+    sample_sampler_options = [
+        "euler_a",
+        "euler",
+        "dpm++_2m_karras",
+        "dpm++_2m",
+        "dpm++_sde_karras",
+        "ddim",
     ]
 
     # Widgets -----------------------------------------------------------------
@@ -145,25 +169,25 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
     )
 
     resolution_widget = widgets.IntText(
-        value=int(namespace.get("resolution", 1024)),
+        value=int(namespace.get("resolution", 768)),
         description="resolution",
         style=base_style,
         layout=number_layout,
     )
     num_repeats_widget = widgets.IntText(
-        value=int(namespace.get("num_repeats", 2)),
+        value=int(namespace.get("num_repeats", 3)),
         description="num_repeats",
         style=base_style,
         layout=number_layout,
     )
     how_many_widget = widgets.IntText(
-        value=int(namespace.get("how_many", 40)),
+        value=int(namespace.get("how_many", 15)),
         description="how_many",
         style=base_style,
         layout=number_layout,
     )
     unet_lr_widget = widgets.Text(
-        value=_format_scientific(namespace.get("unet_lr", 1e-4)),
+        value=_format_scientific(namespace.get("unet_lr", 5e-5)),
         description="unet_lr (DiT)",
         style=base_style,
     )
@@ -179,13 +203,13 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     network_dim_widget = widgets.IntText(
-        value=int(namespace.get("network_dim", 16)),
+        value=int(namespace.get("network_dim", 8)),
         description="network_dim",
         style=base_style,
         layout=number_layout,
     )
     network_alpha_widget = widgets.IntText(
-        value=int(namespace.get("network_alpha", 8)),
+        value=int(namespace.get("network_alpha", 4)),
         description="network_alpha",
         style=base_style,
         layout=number_layout,
@@ -217,7 +241,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         style=base_style,
     )
     discrete_flow_shift_widget = widgets.FloatText(
-        value=float(namespace.get("discrete_flow_shift", 3.0)),
+        value=float(namespace.get("discrete_flow_shift", 3)),
         description="discrete_flow_shift",
         style=base_style,
         layout=number_layout,
@@ -240,6 +264,69 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         description="loss_type",
         style=base_style,
     )
+
+    # --- Sample Image Generator Widgets ---
+    enable_sample_generation_widget = widgets.Checkbox(
+        value=bool(namespace.get("enable_sample_generation", False)),
+        description="enable_sample_generation",
+        style={"description_width": "180px"},
+        indent=False,
+    )
+    sample_every_n_epochs_widget = widgets.IntText(
+        value=int(namespace.get("sample_every_n_epochs", 1)),
+        description="sample_every_n_epochs",
+        style=base_style,
+        layout=number_layout,
+    )
+    sample_at_first_widget = widgets.Checkbox(
+        value=bool(namespace.get("sample_at_first", True)),
+        description="sample_at_first",
+        style={"description_width": "180px"},
+        indent=False,
+    )
+    sample_positive_prompt_widget = widgets.Textarea(
+        value=str(namespace.get("sample_positive_prompt", "masterpiece, best quality, 1girl, upper body, looking at viewer, simple background")),
+        description="positive_prompt",
+        style=base_style,
+        layout=widgets.Layout(width="100%", height="60px"),
+    )
+    sample_negative_prompt_widget = widgets.Textarea(
+        value=str(namespace.get("sample_negative_prompt", "low quality, worst quality, bad anatomy, bad composition, poor, low effort")),
+        description="negative_prompt",
+        style=base_style,
+        layout=widgets.Layout(width="100%", height="60px"),
+    )
+    sample_resolution_widget = widgets.Dropdown(
+        options=sample_resolution_options,
+        value=namespace.get("sample_resolution", "832x1216"),
+        description="sample_resolution",
+        style=base_style,
+    )
+    sample_seed_widget = widgets.IntText(
+        value=int(namespace.get("sample_seed", 55)),
+        description="sample_seed",
+        style=base_style,
+        layout=number_layout,
+    )
+    sample_cfg_scale_widget = widgets.FloatText(
+        value=float(namespace.get("sample_cfg_scale", 4.5)),
+        description="sample_cfg_scale",
+        style=base_style,
+        layout=number_layout,
+    )
+    sample_steps_widget = widgets.IntText(
+        value=int(namespace.get("sample_steps", 28)),
+        description="sample_steps",
+        style=base_style,
+        layout=number_layout,
+    )
+    sample_sampler_widget = widgets.Dropdown(
+        options=sample_sampler_options,
+        value=namespace.get("sample_sampler", "euler_a"),
+        description="sample_sampler",
+        style=base_style,
+    )
+
     attn_mode_widget = widgets.Dropdown(
         options=attn_mode_options,
         value=namespace.get("attn_mode", "torch"),
@@ -255,7 +342,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         layout=number_layout,
     )
     vae_chunk_size_widget = widgets.IntText(
-        value=int(namespace.get("vae_chunk_size", 64)),
+        value=int(namespace.get("vae_chunk_size", 0)),
         description="vae_chunk_size",
         style=base_style,
         layout=number_layout,
@@ -372,6 +459,28 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         layout=grid_layout,
     )
 
+    sample_toggles_grid = widgets.GridBox(
+        children=[
+            enable_sample_generation_widget,
+            sample_at_first_widget,
+            sample_every_n_epochs_widget,
+            sample_resolution_widget,
+            sample_seed_widget,
+            sample_cfg_scale_widget,
+            sample_steps_widget,
+            sample_sampler_widget,
+        ],
+        layout=grid_layout,
+    )
+
+    sample_prompts_box = widgets.VBox(
+        children=[
+            sample_positive_prompt_widget,
+            sample_negative_prompt_widget,
+        ],
+    )
+
+
 
     def apply_params(_=None) -> None:
         try:
@@ -404,6 +513,18 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
                 "network_train_unet_only": bool(network_train_unet_only_widget.value),
                 "qwen3_max_token_length": int(qwen3_max_token_length_widget.value),
                 "t5_max_token_length": int(t5_max_token_length_widget.value),
+                # Sample Image Generator
+                "enable_sample_generation": bool(enable_sample_generation_widget.value),
+                "sample_every_n_epochs": int(sample_every_n_epochs_widget.value),
+                "sample_at_first": bool(sample_at_first_widget.value),
+                "sample_positive_prompt": sample_positive_prompt_widget.value.strip(),
+                "sample_negative_prompt": sample_negative_prompt_widget.value.strip(),
+                "sample_resolution": sample_resolution_widget.value,
+                "sample_seed": int(sample_seed_widget.value),
+                "sample_cfg_scale": float(sample_cfg_scale_widget.value),
+                "sample_steps": int(sample_steps_widget.value),
+                "sample_sampler": sample_sampler_widget.value,
+
             }
         except ValueError as exc:
             status_output.value = f"<b>Error:</b> {exc}"
@@ -447,6 +568,10 @@ Haz clic en **Aplicar parámetros** para guardar los cambios.
                 anima_params_grid,
                 widgets.HTML("<h4 style='margin:16px 0 4px;'>Memoria y Optimización</h4>"),
                 memory_grid,
+                widgets.HTML("<h4 style='margin:16px 0 4px;'>🖼️ Sample Image Generator</h4>"),
+                sample_toggles_grid,
+                sample_prompts_box,
+
                 widgets.HBox([widgets.HBox([], layout=widgets.Layout(flex="1")), apply_button]),
                 status_output,
             ]

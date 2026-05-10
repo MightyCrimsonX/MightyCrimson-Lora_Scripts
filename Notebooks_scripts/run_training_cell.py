@@ -42,6 +42,10 @@ root_dir = "/root"
 kohya_dir = os.path.join(root_dir, "sd-scripts")
 models_dir = "/root/models"
 downloads_dir = os.path.join(root_dir, "downloads")
+custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
+if custom_optimizer_path not in sys.path:
+  sys.path.append(custom_optimizer_path)
+os.environ["PYTHONPATH"] = custom_optimizer_path + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # Lightning notebooks run continuously; automatic shutdown is not managed here.
 print("🔵 Lightning environment detectado. Detén el cuaderno manualmente cuando termines.")
@@ -68,7 +72,7 @@ COMMIT = "fa2427c6b468231e8e270e40fe72add780118dbe"
 LOWRAM = False
 LOAD_TRUNCATED_IMAGES = True
 BETTER_EPOCH_NAMES = True
-FIX_DIFFUSERS = False
+FIX_DIFFUSERS = True
 FIX_WANDB_WARNING = True
 
 #@title ## 🚩 Start Here (Anima LoRA Training)
@@ -130,7 +134,7 @@ model_url = model_url.strip()
 
 #@markdown ### ▶️ Processing
 #@markdown Por defecto la resolución para Anima es 1024. Otras resoluciones posibles son 896 o 768.
-resolution_param = 1024 #@param {type:"dropdown", min:768, max:1536, step:128}
+resolution_param = 768 #@param {type:"dropdown", min:768, max:1536, step:128}
 resolution = globals().get("resolution", resolution_param)
 #@markdown Activa `Flip Aug`si tu dataset es pequeño, volteará tus imágenes (modo espejo).
 flip_aug = False #@param {type:"boolean"}
@@ -169,7 +173,7 @@ text_encoder_lr = globals().get("text_encoder_lr", text_encoder_lr_param)
 #@markdown El scheduler es el algoritmo que guía la tasa de aprendizaje.
 lr_scheduler_param = "constant_with_warmup" # @param ["constant","cosine","cosine_with_restarts","constant_with_warmup","linear","polynomial"]
 lr_scheduler = globals().get("lr_scheduler", lr_scheduler_param)
-lr_scheduler_number = 3 #@param {type:"number"}
+lr_scheduler_number = 0 #@param {type:"number"}
 #@markdown Pasos de warmup como proporción del total.
 lr_warmup_ratio = 0.05 #@param {type:"slider", min:0.0, max:0.2, step:0.01}
 lr_warmup_steps = 100 #@param {type:"number"}
@@ -269,7 +273,7 @@ full_precision = "full" in precision
 
 #@markdown ### ▶️ Advanced
 #@markdown El optimizador utilizado para el entrenamiento.
-optimizer_param = "Prodigy" #@param ["AdamW8bit", "Prodigy", "DAdaptation", "DadaptAdam", "DadaptLion", "AdamW", "Lion", "SGDNesterov", "SGDNesterov8bit", "AdaFactor", "CAME"]
+optimizer_param = "Prodigy" #@param ["AdamW8bit", "Prodigy", "DAdaptation", "DadaptAdam", "DadaptLion", "AdamW", "Lion", "SGDNesterov", "SGDNesterov8bit", "AdaFactor", "Came"]
 optimizer = globals().get("optimizer", optimizer_param)
 #@markdown Argumentos recomendados para Prodigy: `decouple=True weight_decay=0.01 betas=[0.9,0.999] d_coef=2 use_bias_correction=True safeguard_warmup=True`
 #@markdown Si se selecciona Dadapt o Prodigy y se marca la casilla recomendada, se aplicarán valores optimizados.
@@ -282,6 +286,38 @@ optimizer_args = [a.strip() for a in optimizer_args.split(' ') if a]
 loss_type_param = "l2" #@param ["l1", "l2", "huber", "smooth_l1"]
 loss_type = globals().get("loss_type", loss_type_param)
 
+#@markdown ### ▶️ Sample Image Generator 🖼️
+#@markdown Genera imágenes de muestra durante el entrenamiento para monitorear el progreso visual del LoRA.
+enable_sample_generation_param = False #@param {type:"boolean"}
+enable_sample_generation = bool(globals().get("enable_sample_generation", enable_sample_generation_param))
+#@markdown Genera muestras cada N épocas.
+sample_every_n_epochs_param = 1 #@param {type:"number"}
+sample_every_n_epochs = int(globals().get("sample_every_n_epochs", sample_every_n_epochs_param))
+#@markdown Genera una muestra antes de iniciar el entrenamiento.
+sample_at_first_param = True #@param {type:"boolean"}
+sample_at_first = bool(globals().get("sample_at_first", sample_at_first_param))
+#@markdown **Prompt positivo** para las imágenes de muestra.
+sample_positive_prompt_param = "masterpiece, best quality, 1girl, upper body, looking at viewer, simple background" #@param {type:"string"}
+sample_positive_prompt = str(globals().get("sample_positive_prompt", sample_positive_prompt_param))
+#@markdown **Prompt negativo** para las imágenes de muestra.
+sample_negative_prompt_param = "low quality, worst quality, bad anatomy, bad composition, poor, low effort" #@param {type:"string"}
+sample_negative_prompt = str(globals().get("sample_negative_prompt", sample_negative_prompt_param))
+#@markdown Resolución de las imágenes de muestra.
+sample_resolution_param = "832x1216" #@param ["832x1216", "1216x832", "768x1344", "1344x768", "768x1024", "1024x768", "1024x1024", "896x1152", "1152x896"]
+sample_resolution = str(globals().get("sample_resolution", sample_resolution_param))
+#@markdown Semilla para la generación (se usará la misma en todas las muestras).
+sample_seed_param = 42 #@param {type:"number"}
+sample_seed = int(globals().get("sample_seed", sample_seed_param))
+#@markdown CFG Scale para la generación de muestras.
+sample_cfg_scale_param = 7.0 #@param {type:"number"}
+sample_cfg_scale = float(globals().get("sample_cfg_scale", sample_cfg_scale_param))
+#@markdown Número de pasos de generación para las muestras.
+sample_steps_param = 28 #@param {type:"number"}
+sample_steps = int(globals().get("sample_steps", sample_steps_param))
+#@markdown Sampler/Scheduler para la generación de muestras.
+sample_sampler_param = "euler_a" #@param ["euler_a", "euler", "dpm++_2m_karras", "dpm++_2m", "dpm++_sde_karras", "ddim"]
+sample_sampler = str(globals().get("sample_sampler", sample_sampler_param))
+
 if recommended_values:
   if any(opt in optimizer.lower() for opt in ["dadapt", "prodigy"]):
     unet_lr = 1.0
@@ -291,13 +327,13 @@ if recommended_values:
   if optimizer == "Prodigy":
     optimizer_args = ["d_coef=1", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
-    optimizer_args = ["weight_decay=0.1"]
+    optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
-  elif optimizer == "CAME":
-    optimizer_args = ["weight_decay=0.1"]
+  elif optimizer == "Came":
+    optimizer_args = ["weight_decay=0.02","betas=[0.9,0.999,0.9995]"]
 
-if optimizer == "CAME":
+if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"
 
 lr_scheduler_type = None
@@ -305,13 +341,18 @@ lr_scheduler_args = []
 lr_scheduler_num_cycles = lr_scheduler_number
 lr_scheduler_power = lr_scheduler_number
 
+if "rex" in lr_scheduler:
+  lr_scheduler = "cosine"
+  lr_scheduler_type = "LoraEasyCustomOptimizer.RexAnnealingWarmRestarts.RexAnnealingWarmRestarts"
+  lr_scheduler_args = ["min_lr=1e-6", "gamma=0.9", "d=0.9"]
+
 
 # Misc
 seed = 42
 gradient_accumulation_steps = 1
 bucket_reso_steps = 64
 min_bucket_reso = 256
-max_bucket_reso = 1536
+max_bucket_reso = 1560
 
 #@markdown ### ▶️ Ready
 #@markdown Ahora puedes ejecutar esta celda para entrenar tu LoRA de Anima. ¡Buena suerte!
@@ -348,6 +389,10 @@ else:
 
 config_file = os.path.join(config_folder, "training_config.toml")
 dataset_config_file = os.path.join(config_folder, "dataset_config.toml")
+
+# --- Sample Image Generation Paths ---
+samples_folder = os.path.join(main_dir, project_name, "samples_img")
+sample_prompt_file = os.path.join(config_folder, "sample_prompts.txt")
 
 def install_trainer():
   global installed
@@ -493,6 +538,15 @@ def create_config():
     config_file = override_config_file
     print(f"\n⭕ Using custom config file {config_file}")
   else:
+    # --- Create sample prompt file if enabled ---
+    if enable_sample_generation:
+      os.makedirs(samples_folder, exist_ok=True)
+      sample_w, sample_h = sample_resolution.split("x")
+      with open(sample_prompt_file, "w") as spf:
+        prompt_line = f"{sample_positive_prompt} --n {sample_negative_prompt} --w {sample_w} --h {sample_h} --d {int(sample_seed)} --l {sample_cfg_scale} --s {int(sample_steps)}"
+        spf.write(prompt_line + "\n")
+      print(f"📝 Prompt de sample guardado en {sample_prompt_file}")
+
     config_dict = {
       "network_arguments": {
         "unet_lr": unet_lr,
@@ -562,6 +616,12 @@ def create_config():
         "logging_dir": log_folder,
         "wandb_api_key": wandb_key or None,
         "log_with": "wandb" if wandb_key else None,
+      },
+      "sample_arguments": {
+        "sample_every_n_epochs": sample_every_n_epochs if enable_sample_generation else None,
+        "sample_at_first": sample_at_first if enable_sample_generation else None,
+        "sample_prompts": sample_prompt_file if enable_sample_generation else None,
+        "sample_sampler": sample_sampler if enable_sample_generation else None,
       }
     }
 
@@ -678,14 +738,15 @@ def download_model():
       filename = "downloaded_model.safetensors"
 
     model_file = os.path.join(models_dir, filename)
+
     if os.path.exists(model_file):
-      _run_cmd(f"rm '{model_file}'")
+      print(f"✅ Modelo DiT ya descargado: {model_file}")
+    else:
+      if re.search(r"(?:https?://)?(?:www\.)?huggingface\.co/[^/]+/[^/]+/blob", real_model_url):
+        real_model_url = real_model_url.replace("blob", "resolve")
 
-    if re.search(r"(?:https?://)?(?:www\.)?huggingface\.co/[^/]+/[^/]+/blob", real_model_url):
-      real_model_url = real_model_url.replace("blob", "resolve")
-
-    print(f"🌐 Descargando modelo DiT en {model_file} ...")
-    _run_cmd(f"aria2c '{real_model_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(model_file)}'")
+      print(f"🌐 Descargando modelo DiT en {model_file} ...")
+      _run_cmd(f"aria2c '{real_model_url}' --console-log-level=warn -c -s 16 -x 16 -k 10M -d {models_dir} -o '{os.path.basename(model_file)}'")
 
   if model_file.lower().endswith(".safetensors"):
     from safetensors.torch import load_file as load_safetensors
@@ -764,7 +825,7 @@ def main():
       return
     print()
   else:
-    print("🔄 Modelo DiT ya disponible.")
+    print("🔄 Modelo Anima ya disponible.")
 
   print("🔄 Verificando componentes Anima (Qwen3 text encoder + Qwen-Image VAE)...")
   if not download_anima_components():

@@ -42,10 +42,6 @@ root_dir = "/root"
 kohya_dir = os.path.join(root_dir, "sd-scripts")
 models_dir = "/root/models"
 downloads_dir = os.path.join(root_dir, "downloads")
-custom_optimizer_path = os.path.join(trainer_dir, "custom_scheduler")
-if custom_optimizer_path not in sys.path:
-  sys.path.append(custom_optimizer_path)
-os.environ["PYTHONPATH"] = custom_optimizer_path + os.pathsep + os.environ.get("PYTHONPATH", "")
 
 # Lightning notebooks run continuously; automatic shutdown is not managed here.
 print("🔵 Lightning environment detectado. Detén el cuaderno manualmente cuando termines.")

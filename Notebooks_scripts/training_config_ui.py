@@ -285,13 +285,13 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         indent=False,
     )
     sample_positive_prompt_widget = widgets.Textarea(
-        value=str(namespace.get("sample_positive_prompt", "masterpiece, best quality, 1girl, upper body, looking at viewer, simple background")),
+        value=str(namespace.get("sample_positive_prompt", "best quality,")),
         description="positive_prompt",
         style=base_style,
         layout=widgets.Layout(width="100%", height="60px"),
     )
     sample_negative_prompt_widget = widgets.Textarea(
-        value=str(namespace.get("sample_negative_prompt", "low quality, worst quality, bad anatomy, bad composition, poor, low effort")),
+        value=str(namespace.get("sample_negative_prompt", "low quality, worst quality")),
         description="negative_prompt",
         style=base_style,
         layout=widgets.Layout(width="100%", height="60px"),

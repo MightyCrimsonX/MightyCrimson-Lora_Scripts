@@ -33,7 +33,13 @@ class _DropdownOption:
 def _format_scientific(value: Any) -> str:
     """Return ``value`` formatted in scientific notation when possible."""
     try:
-        return format(float(value), ".0e")
+        val = float(value)
+        if val == 0:
+            return "0"
+        s = f"{val:e}"
+        mantissa, exp = s.split('e')
+        mantissa = mantissa.rstrip('0').rstrip('.')
+        return f"{mantissa}e{exp}"
     except (TypeError, ValueError):
         return str(value)
 
@@ -208,7 +214,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         layout=number_layout,
     )
     network_alpha_widget = widgets.IntText(
-        value=int(namespace.get("network_alpha", 4)),
+        value=int(namespace.get("network_alpha", 8)),
         description="network_alpha",
         style=base_style,
         layout=number_layout,

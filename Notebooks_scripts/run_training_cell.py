@@ -209,7 +209,7 @@ network_args = None
 timestep_sampling_param = "sigmoid" #@param ["sigma", "uniform", "sigmoid", "shift", "flux_shift"]
 timestep_sampling = globals().get("timestep_sampling", timestep_sampling_param)
 #@markdown Shift para la distribución de timesteps en Rectified Flow. Solo aplica cuando timestep_sampling='shift'.
-discrete_flow_shift_param = 3.0 #@param {type:"number"}
+discrete_flow_shift_param = 0 #@param {type:"number"}
 discrete_flow_shift = globals().get("discrete_flow_shift", discrete_flow_shift_param)
 #@markdown Factor de escala para sigmoid/shift/flux_shift timestep sampling.
 sigmoid_scale_param = 1.0 #@param {type:"number"}
@@ -333,6 +333,8 @@ if recommended_values:
     optimizer_args = ["d_coef=1", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
     optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
+  elif optimizer == "AdamW8bitKahan":
+    optimizer_args = ["weight_decay=0.04"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "Came":
@@ -340,6 +342,10 @@ if recommended_values:
 
 if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"
+
+if optimizer == "AdamW8bitKahan":
+  optimizer = "LoraEasyCustomOptimizer.adam.AdamW8bitKahan"
+  optimizer_args = ["weight_decay=0.04"]
 
 lr_scheduler_type = None
 lr_scheduler_args = None

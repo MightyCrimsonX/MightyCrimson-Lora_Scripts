@@ -92,6 +92,7 @@ def render_quick_training_config(namespace: Dict[str, Any]) -> None:
         "AdamW",
         "AdaFactor",
         "Came",
+        "AdamW8bitKahan",
     ]
 
     timestep_sampling_options = [

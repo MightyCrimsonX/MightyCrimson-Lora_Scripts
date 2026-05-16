@@ -115,13 +115,12 @@ custom_model_selected = use_optional_custom_training_model and len(optional_cust
 # --- Anima Model URLs ---
 if custom_model_selected:
   model_url = optional_custom_training_model
-elif "Anima-Preview" in training_model:
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
-  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
+elif "Anima" in training_model:
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-base-v1.0.safetensors"
+  model_file = os.path.join(models_dir, "anima-base-v1.0.safetensors")
 else:
-  # Default fallback to Anima-Preview
-  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-preview3-base.safetensors"
-  model_file = os.path.join(models_dir, "anima-preview3-base.safetensors")
+  model_url = "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-base-v1.0.safetensors"
+  model_file = os.path.join(models_dir, "anima-base-v1.0.safetensors")
 
 # The VAE path is passed directly as --vae argument
 vae_file = anima_vae_path
@@ -324,6 +323,8 @@ if recommended_values:
     optimizer_args = ["d_coef=1", "use_bias_correction=True", "safeguard_warmup=True", "weight_decay=0.01", "decouple=True"]
   elif optimizer == "AdamW8bit":
     optimizer_args = ["weight_decay=0.1", "betas=[0.9,0.99]"]
+  elif optimizer == "AdamW8bitKahan":
+    optimizer_args = ["weight_decay=0.04"]
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "Came":
@@ -331,6 +332,10 @@ if recommended_values:
 
 if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"
+
+if optimizer == "AdamW8bitKahan":
+  optimizer = "LoraEasyCustomOptimizer.adam.AdamW8bitKahan"
+  optimizer_args = ["weight_decay=0.04"]
 
 lr_scheduler_type = None
 lr_scheduler_args = []

@@ -345,8 +345,7 @@ lr_scheduler_power = lr_scheduler_number
 if "rex" in lr_scheduler:
   lr_scheduler = "cosine"
   lr_scheduler_type = "LoraEasyCustomOptimizer.RexAnnealingWarmRestarts.RexAnnealingWarmRestarts"
-  lr_scheduler_args = ["min_lr=1e-6", "gamma=0.9", "d=0.9"]
-
+  lr_scheduler_args = ["min_lr=1e-9", "gamma=0.9", "d=0.9"]
 
 # Misc
 seed = 42

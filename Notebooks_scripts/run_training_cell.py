@@ -328,7 +328,7 @@ if recommended_values:
   elif optimizer == "AdaFactor":
     optimizer_args = ["scale_parameter=False", "relative_step=False", "warmup_init=False"]
   elif optimizer == "Came":
-    optimizer_args = ["weight_decay=0.02","betas=[0.9,0.999,0.9995]"]
+    optimizer_args = ["weight_decay=0.04"]
 
 if optimizer == "Came":
   optimizer = "LoraEasyCustomOptimizer.came.CAME"
@@ -350,7 +350,7 @@ if "rex" in lr_scheduler:
 
 # Misc
 seed = 42
-gradient_accumulation_steps = 1
+gradient_accumulation_steps = 2
 bucket_reso_steps = 64
 min_bucket_reso = 256
 max_bucket_reso = 1560
@@ -593,7 +593,7 @@ def create_config():
         "ip_noise_gamma": ip_noise_gamma if ip_noise_gamma_enabled else None,
         "gradient_checkpointing": True,
         "gradient_accumulation_steps": gradient_accumulation_steps,
-        "max_data_loader_n_workers": 4,
+        "max_data_loader_n_workers": 1,
         "persistent_data_loader_workers": True,
         "mixed_precision": mixed_precision,
         "full_fp16": mixed_precision == "fp16" and full_precision,

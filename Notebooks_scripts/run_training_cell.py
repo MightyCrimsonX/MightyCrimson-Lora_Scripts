@@ -322,6 +322,7 @@ sample_steps = int(globals().get("sample_steps", sample_steps_param))
 #@markdown Sampler/Scheduler para la generación de muestras.
 sample_sampler_param = "euler_a" #@param ["euler_a", "euler", "dpm++_2m_karras", "dpm++_2m", "dpm++_sde_karras", "ddim"]
 sample_sampler = str(globals().get("sample_sampler", sample_sampler_param))
+caption_tag_dropout_rate = 0.05
 
 if recommended_values:
   if any(opt in optimizer.lower() for opt in ["dadapt", "prodigy"]):
@@ -359,7 +360,7 @@ if "rex" in lr_scheduler:
 
 # Misc
 seed = 42
-gradient_accumulation_steps = 1
+gradient_accumulation_steps = 2
 bucket_reso_steps = 64
 min_bucket_reso = 256
 max_bucket_reso = 1560
@@ -610,7 +611,7 @@ def create_config():
         "ip_noise_gamma": ip_noise_gamma if ip_noise_gamma_enabled else None,
         "gradient_checkpointing": True,
         "gradient_accumulation_steps": gradient_accumulation_steps,
-        "max_data_loader_n_workers": 4,
+        "max_data_loader_n_workers": 2,
         "persistent_data_loader_workers": True,
         "mixed_precision": mixed_precision,
         "full_fp16": mixed_precision == "fp16" and full_precision,
@@ -674,7 +675,8 @@ def create_config():
             {
               "num_repeats": num_repeats,
               "image_dir": images_folder,
-              "class_tokens": None if caption_extension else project_name
+              "class_tokens": None if caption_extension else project_name,
+              "caption_tag_dropout_rate": caption_tag_dropout_rate
             }
           ]
         }

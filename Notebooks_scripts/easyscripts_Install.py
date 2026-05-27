@@ -103,7 +103,7 @@ def download_models():
         filename = url.split("/")[-1]
         print(f"Descargando archivo: {filename}...")
         # El argumento -o asegura que conserve el nombre 'anima-base-v1.0.safetensors', etc.
-        run_command(f"aria2c -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
+        run_command(f"aria2c --console-log-level=error -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
 
 
 if __name__ == "__main__":

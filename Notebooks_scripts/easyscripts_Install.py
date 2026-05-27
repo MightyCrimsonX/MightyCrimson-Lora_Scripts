@@ -1,7 +1,7 @@
 import os
 import subprocess
 import yaml
-import json  # Importado para manejar el archivo config.json
+import json
 
 def run_command(command, shell=True):
     """Función auxiliar para ejecutar comandos de consola de forma limpia."""
@@ -117,7 +117,6 @@ def download_models():
         "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors"
     ]
     
-    # Descarga multi-hilo forzando el nombre correcto mediante el parámetro --out (-o)
     for url in urls:
         filename = url.split("/")[-1]
         print(f"Descargando archivo: {filename}...")
@@ -128,7 +127,7 @@ if __name__ == "__main__":
     print("Iniciando script de instalación, configuración y descarga...")
     setup_environment()
     create_accelerate_config()
-    create_backend_config()  # Ejecución de la nueva configuración del backend
+    create_backend_config() 
     download_models()
     print("\n=============================================")
     print(" INSTALACIÓN Y CONFIGURACIÓN COMPLETADAS CON ÉXITO")

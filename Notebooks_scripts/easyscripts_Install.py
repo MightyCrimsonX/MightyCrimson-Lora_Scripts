@@ -70,7 +70,7 @@ def create_accelerate_config():
         "gpu_ids": "all",
         "machine_rank": 0,
         "main_training_function": "main",
-        "mixed_precision": "fp16",  # Cambiar a bf16 si se cuenta con arquitecturas Ampere/Ada Lovelace o superiores
+        "mixed_precision": "fp16",
         "num_machines": 1,
         "num_processes": 1,
         "rdzv_backend": "static",
@@ -98,12 +98,12 @@ def download_models():
         "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors"
     ]
     
-    # Descarga multi-hilo de alto rendimiento usando aria2c
+    # Descarga multi-hilo forzando el nombre correcto mediante el parámetro --out (-o)
     for url in urls:
         filename = url.split("/")[-1]
         print(f"Descargando archivo: {filename}...")
-        # Usa 16 conexiones simultáneas para maximizar el ancho de banda del servidor
-        run_command(f"aria2c -x 16 -s 16 -d {models_dir} {url}")
+        # El argumento -o asegura que conserve el nombre 'anima-base-v1.0.safetensors', etc.
+        run_command(f"aria2c -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
 
 
 if __name__ == "__main__":

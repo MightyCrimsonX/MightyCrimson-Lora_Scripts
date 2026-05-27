@@ -1,6 +1,7 @@
 import os
 import subprocess
 import yaml
+import json  # Importado para manejar el archivo config.json
 
 def run_command(command, shell=True):
     """Función auxiliar para ejecutar comandos de consola de forma limpia."""
@@ -83,11 +84,29 @@ def create_accelerate_config():
 
     with open(config_path, "w", encoding="utf-8") as f:
         yaml.dump(accelerate_config, f, default_flow_style=False)
-    print(f"Configuración guardada con éxito en: {config_path}")
+    print(f"Configuración de Accelerate guardada en: {config_path}")
+
+
+def create_backend_config():
+    print("\n=== 5. Creando config.json para el Backend ===")
+    backend_dir = "/root/LoRA_Easy_Training_Scripts/backend"
+    os.makedirs(backend_dir, exist_ok=True)
+    
+    config_path = os.path.join(backend_dir, "config.json")
+    
+    config_data = {
+        "remote": True,
+        "port": 8000
+    }
+
+    with open(config_path, "w", encoding="utf-8") as f:
+        json.dump(config_data, f, indent=2)
+        
+    print(f"Archivo generado con éxito en: {config_path}")
 
 
 def download_models():
-    print("\n=== 5. Descargando Modelos Base (Anima) ===")
+    print("\n=== 6. Descargando Modelos Base (Anima) ===")
     models_dir = "/root/models"
     os.makedirs(models_dir, exist_ok=True)
     os.chdir(models_dir)
@@ -102,15 +121,15 @@ def download_models():
     for url in urls:
         filename = url.split("/")[-1]
         print(f"Descargando archivo: {filename}...")
-        # El argumento -o asegura que conserve el nombre 'anima-base-v1.0.safetensors', etc.
         run_command(f"aria2c --console-log-level=error -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
 
 
 if __name__ == "__main__":
-    print("Iniciando script de instalación y descarga...")
+    print("Iniciando script de instalación, configuración y descarga...")
     setup_environment()
     create_accelerate_config()
+    create_backend_config()  # Ejecución de la nueva configuración del backend
     download_models()
     print("\n=============================================")
-    print(" INSTALACIÓN Y DESCARGAS COMPLETADAS CON ÉXITO")
+    print(" INSTALACIÓN Y CONFIGURACIÓN COMPLETADAS CON ÉXITO")
     print("=============================================")

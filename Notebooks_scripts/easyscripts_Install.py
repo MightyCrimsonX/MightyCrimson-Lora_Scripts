@@ -17,7 +17,7 @@ def setup_environment():
     os.chdir("/root")
     
     # Clonar el repositorio principal de entrenamiento
-    run_command("git clone https://github.com/MightyCrimsonX/LoRA_Easy_Training_Scripts.git")
+    run_command("git clone https://github.com/67372a/LoRA_Easy_Training_Scripts.git")
     
     # Descargar los widgets y scripts complementarios
     run_command("wget -q https://raw.githubusercontent.com/MightyCrimsonX/MightyCrimson_Lora_Scripts/refs/heads/Anima_Modal/Notebooks_scripts/sample_prompt_widget.py")

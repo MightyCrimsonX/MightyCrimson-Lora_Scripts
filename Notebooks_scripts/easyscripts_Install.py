@@ -121,7 +121,7 @@ def download_models():
     for url in urls:
         filename = url.split("/")[-1]
         print(f"Descargando archivo: {filename}...")
-        run_command(f"aria2c --console-log-level=error -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
+        #run_command(f"aria2c --console-log-level=error -x 16 -s 16 -d {models_dir} -o {filename} '{url}'")
 
 
 if __name__ == "__main__":

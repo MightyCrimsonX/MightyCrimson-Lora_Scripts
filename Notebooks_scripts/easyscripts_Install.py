@@ -37,6 +37,7 @@ def setup_environment():
     
     print("\n=== 3. Instalando dependencias de optimización y PyTorch ===")
     os.chdir("/root/LoRA_Easy_Training_Scripts/backend/sd_scripts")
+    run_command("git checkout 44c93b2")
     
     # Instalación de extensiones de tipado y entorno de ejecución Torch cu128
     run_command("uv pip install --system -U typing-extensions~=4.15.0")

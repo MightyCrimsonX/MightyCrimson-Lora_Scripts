@@ -105,6 +105,7 @@ def create_sample_prompt_ui(defaults: dict | None = None) -> widgets.VBox:
         style={"description_width": "initial"},
         layout=_TEXTAREA_LAYOUT,
         placeholder="Prompt positivo para las imágenes de muestra…",
+        continuous_update=False,
     )
 
     w_negative = widgets.Textarea(
@@ -113,6 +114,7 @@ def create_sample_prompt_ui(defaults: dict | None = None) -> widgets.VBox:
         style={"description_width": "initial"},
         layout=_TEXTAREA_LAYOUT,
         placeholder="Prompt negativo para las imágenes de muestra…",
+        continuous_update=False,
     )
 
     w_resolution = widgets.Dropdown(
@@ -151,6 +153,7 @@ def create_sample_prompt_ui(defaults: dict | None = None) -> widgets.VBox:
         style={"description_width": "initial"},
         layout=_INPUT_LAYOUT,
         placeholder="Directorio donde se guardará sample_prompts.txt",
+        continuous_update=False,
     )
 
     w_button = widgets.Button(
